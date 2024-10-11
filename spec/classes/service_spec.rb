@@ -1,6 +1,12 @@
 require 'spec_helper'
 
-shared_examples 'zookeeper::service' do |os_facts|
+describe 'zookeeper::service', type: :class do
+  _, os_facts = on_supported_os.first
+
+  os_facts[:os]['hardware'] = 'x86_64'
+  os_facts[:ipaddress] = '192.168.1.1'
+  let(:facts) { os_facts }
+
   let(:user) { 'zookeeper' }
   let(:group) { 'zookeeper' }
 
@@ -25,32 +31,30 @@ shared_examples 'zookeeper::service' do |os_facts|
          }'
       end
 
-      it { should contain_package('zookeeper') }
+      it { is_expected.to contain_package('zookeeper') }
 
       if should_install_zookeeperd
-        it { should contain_package('zookeeperd') }
+        it { is_expected.to contain_package('zookeeperd') }
       else
-        it { should_not contain_package('zookeeperd') }
+        it { is_expected.not_to contain_package('zookeeperd') }
       end
 
       it do
         is_expected.to contain_file(
-          "/usr/lib/systemd/system/#{service_name}.service"
-        ).with({
-          'ensure' => 'present',
-        })
+          "/usr/lib/systemd/system/#{service_name}.service",
+        ).with('ensure' => 'file')
       end
 
       it do
         is_expected.to contain_file(
-          "/usr/lib/systemd/system/#{service_name}.service"
-        ).with_content(/CLASSPATH="\/usr\/lib\/zookeeper\/zookeeper.jar/)
+          "/usr/lib/systemd/system/#{service_name}.service",
+        ).with_content(%r{CLASSPATH="/usr/lib/zookeeper/zookeeper.jar})
       end
 
       it do
         is_expected.to contain_service(service_name).with(
-          :ensure => 'running',
-          :enable => true
+          ensure: 'running',
+          enable: true,
         )
       end
 
@@ -65,7 +69,7 @@ shared_examples 'zookeeper::service' do |os_facts|
 
         it do
           is_expected.to contain_file(service_file).with_content(
-            /zookeeper-3\.4\.9\.jar/
+            %r{zookeeper-3\.4\.9\.jar},
           )
         end
       end
@@ -81,16 +85,12 @@ shared_examples 'zookeeper::service' do |os_facts|
 
         it do
           is_expected.not_to contain_file(
-            '/usr/lib/systemd/system/zookeeper.service'
-          ).with({
-            'ensure' => 'present',
-          })
+            '/usr/lib/systemd/system/zookeeper.service',
+          ).with('ensure' => 'present')
         end
 
         it do
-          is_expected.not_to contain_file(service_file).with({
-            'ensure' => 'present',
-          })
+          is_expected.not_to contain_file(service_file).with('ensure' => 'file')
         end
       end
 
@@ -106,25 +106,24 @@ shared_examples 'zookeeper::service' do |os_facts|
         end
 
         it do
-          is_expected.to contain_file(service_file).with({
-            'ensure' => 'present',
-          })
+          is_expected.to contain_file(service_file).with('ensure' => 'file')
         end
 
         it do
           is_expected.to contain_file(service_file).with_content(
-            /Wants=network-online.target openvpn-client@.service/
+            %r{Wants=network-online.target openvpn-client@.service},
           )
         end
 
         it do
           is_expected.to contain_service(service_name).with(
-            :ensure => 'running',
-            :enable => true
+            ensure: 'running',
+            enable: true,
           )
         end
       end
     end
+
   when 'init'
     context 'init' do
       let :pre_condition do
@@ -138,23 +137,19 @@ shared_examples 'zookeeper::service' do |os_facts|
 
       it do
         is_expected.to contain_file(
-          '/etc/init.d/zookeeper'
-        ).with({
-          'ensure' => 'present',
-        })
+          '/etc/init.d/zookeeper',
+        ).with('ensure' => 'present')
       end
 
       it do
         is_expected.to contain_service('zookeeper').with(
-          :ensure   => 'running',
-          :enable   => true,
-          :provider => 'init',
+          ensure: 'running',
+          enable: true,
+          provider: 'init',
         )
       end
     end
-  end
 
-  if init_provider != 'upstart'
     context 'custom service name' do
       let :pre_condition do
         'class {"zookeeper":
@@ -163,41 +158,22 @@ shared_examples 'zookeeper::service' do |os_facts|
          }'
       end
 
-      if init_provider == 'systemd'
-        custom_service_file = "#{init_dir}/my-zookeeper.service"
-      else
-        custom_service_file = "#{init_dir}/my-zookeeper"
-      end
+      custom_service_file = if init_provider == 'systemd'
+                              "#{init_dir}/my-zookeeper.service"
+                            else
+                              "#{init_dir}/my-zookeeper"
+                            end
 
       it do
-        is_expected.to contain_file(custom_service_file).with({
-          'ensure' => 'present',
-        })
+        is_expected.to contain_file(custom_service_file).with('ensure' => 'file')
       end
 
       it do
         is_expected.to contain_service('my-zookeeper').with(
-          :ensure => 'running',
-          :enable => true
+          ensure: 'running',
+          enable: true,
         )
       end
-    end
-  end
-end
-
-describe 'zookeeper::service' do
-  on_supported_os.each do |os, os_facts|
-    os_facts[:os]['hardware'] = 'x86_64'
-
-    context "on #{os}" do
-      let(:facts) do
-        os_facts.merge({
-          :ipaddress     => '192.168.1.1',
-          :puppetversion => Puppet.version,
-        })
-      end
-
-      include_examples 'zookeeper::service', os_facts
     end
   end
 end

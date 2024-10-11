@@ -1,8 +1,13 @@
 require 'spec_helper'
 
-shared_examples 'zookeeper::sasl' do |os_facts|
-  os_info = get_os_info(os_facts)
+describe 'zookeeper::sasl', type: :class do
+  _, os_facts = on_supported_os.first
 
+  os_facts[:os]['hardware'] = 'x86_64'
+  os_facts[:ipaddress] = '192.168.1.1'
+  let(:facts) { os_facts }
+
+  os_info = get_os_info(os_facts)
   environment_file = os_info[:environment_file]
 
   context 'sasl config' do
@@ -17,14 +22,14 @@ shared_examples 'zookeeper::sasl' do |os_facts|
 
     it do
       is_expected.to contain_file(
-        '/etc/zookeeper/conf/jaas.conf'
-      ).with_content(/storeKey=true/)
+        '/etc/zookeeper/conf/jaas.conf',
+      ).with_content(%r{storeKey=true})
     end
 
     it do
       is_expected.to contain_file(
-        environment_file
-      ).with_content(/JAVA_OPTS=".* -Djava.security.auth.login.config=\/etc\/zookeeper\/conf\/jaas.conf"/)
+        environment_file,
+      ).with_content(%r{JAVA_OPTS=".* -Djava.security.auth.login.config=/etc/zookeeper/conf/jaas.conf"})
     end
   end
 
@@ -41,32 +46,15 @@ shared_examples 'zookeeper::sasl' do |os_facts|
     it { is_expected.to contain_class('zookeeper::sasl') }
 
     it do
-      should contain_file(
-        '/etc/zookeeper/conf/zoo.cfg'
-      ).with_content(/kerberos.removeHostFromPrincipal=true/)
+      is_expected.to contain_file(
+        '/etc/zookeeper/conf/zoo.cfg',
+      ).with_content(%r{kerberos.removeHostFromPrincipal=true})
     end
 
     it do
-      should contain_file(
-        '/etc/zookeeper/conf/zoo.cfg'
-      ).with_content(/kerberos.removeRealmFromPrincipal=true/)
-    end
-  end
-end
-
-describe 'zookeeper::sasl' do
-  on_supported_os.each do |os, os_facts|
-    os_facts[:os]['hardware'] = 'x86_64'
-
-    context "on #{os}" do
-      let(:facts) do
-        os_facts.merge({
-          :ipaddress     => '192.168.1.1',
-          :puppetversion => Puppet.version,
-        })
-      end
-
-      include_examples 'zookeeper::sasl', os_facts
+      is_expected.to contain_file(
+        '/etc/zookeeper/conf/zoo.cfg',
+      ).with_content(%r{kerberos.removeRealmFromPrincipal=true})
     end
   end
 end

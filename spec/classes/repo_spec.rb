@@ -4,31 +4,19 @@ shared_examples 'zookeeper repo release support' do |os_facts|
   context 'fail when release not supported' do
     let :pre_condition do
       'class {"zookeeper":
-        repo   => "cloudera",
-        cdhver => "5",
+          repo =>  {
+            name      => "myrepo",
+            url       => "http://custom.url",
+            descr     => "description",
+          }
        }'
     end
 
     it do
-      expect do
+      expect {
         is_expected.to compile
-    end.to raise_error(/is not supported for redhat version/) end
-  end
-end
-
-shared_examples 'zookeeper repo arch support' do |os_facts|
-  context 'fail when architecture not supported' do
-    let :pre_condition do
-      'class {"zookeeper":
-        repo   => "cloudera",
-        cdhver => "5",
-       }'
+      }.to raise_error(%r{support repository for #{os_facts[:os]['family']}})
     end
-
-    it do
-      expect do
-        is_expected.to compile
-    end.to raise_error(/is not supported for architecture/) end
   end
 end
 
@@ -36,36 +24,22 @@ shared_examples 'zookeeper repo' do |os_facts|
   let(:user) { 'zookeeper' }
   let(:group) { 'zookeeper' }
 
-  os_release = os_facts[:os]['release']['major']
-  os_hardware = os_facts[:os]['hardware']
-
-  if os_facts[:osfamily] == 'RedHat'
+  if %r{RedHat|Suse}.match?(os_facts[:os]['family'])
     context 'Cloudera repo' do
       let :pre_condition do
         'class {"zookeeper":
-          repo   => "cloudera",
-          cdhver => "5",
+          repo       =>  {
+            name      => "myrepo",
+            url       => "http://custom.url",
+            descr     => "description",
+          }
         }'
       end
 
-      it { is_expected.to contain_yumrepo('cloudera-cdh5').with({
-          baseurl: "http://archive.cloudera.com/cdh5/redhat/#{os_release}/#{os_hardware}/cdh/5/"
-        }) }
+      it do
+        is_expected.to contain_yumrepo('myrepo').with(baseurl: 'http://custom.url')
+      end
     end
-  end
-
-  context 'fail when CDH version not supported' do
-    let :pre_condition do
-      'class {"zookeeper":
-        repo   => "cloudera",
-        cdhver => "6",
-       }'
-    end
-
-    it do
-      expect do
-        should compile
-    end.to raise_error(/is not a supported cloudera repo./) end
   end
 
   context 'fail when repository source not supported' do
@@ -75,10 +49,11 @@ shared_examples 'zookeeper repo' do |os_facts|
        }'
     end
 
-    it do
-      expect do
-        should compile
-    end.to raise_error(/provides no repository information for yum repository/) end
+    it 'requires repo to be a Hash (or not defined)' do
+      expect {
+        is_expected.to compile
+      }.to raise_error(%r{type Undef or Hash})
+    end
   end
 end
 
@@ -88,10 +63,7 @@ describe 'zookeeper::install::repo' do
 
     context "on #{os}" do
       let(:facts) do
-        os_facts.merge({
-          :ipaddress     => '192.168.1.1',
-          :puppetversion => Puppet.version,
-        })
+        os_facts.merge(ipaddress: '192.168.1.1')
       end
 
       include_examples 'zookeeper repo', os_facts
@@ -100,8 +72,8 @@ describe 'zookeeper::install::repo' do
 
   context 'test unsupported repo arch' do
     test_on = {
-      :hardwaremodels => ['arc'],
-      :supported_os => [
+      hardwaremodels: ['arc'],
+      supported_os: [
         {
           'operatingsystem'        => 'RedHat',
           'operatingsystemrelease' => ['7'],
@@ -111,10 +83,7 @@ describe 'zookeeper::install::repo' do
     on_supported_os(test_on).each do |os, os_facts|
       context "on #{os}" do
         let(:facts) do
-          os_facts.merge({
-            :ipaddress     => '192.168.1.1',
-            :puppetversion => Puppet.version,
-          })
+          os_facts.merge(ipaddress: '192.168.1.1')
         end
 
         include_examples 'zookeeper repo arch support', os_facts
@@ -124,10 +93,10 @@ describe 'zookeeper::install::repo' do
 
   context 'test unsupported repo release' do
     test_on = {
-      :supported_os => [
+      supported_os: [
         {
-          'operatingsystem'        => 'RedHat',
-          'operatingsystemrelease' => ['8'],
+          'operatingsystem'        => 'Debian',
+          'operatingsystemrelease' => ['10'],
         },
       ],
     }
@@ -136,10 +105,7 @@ describe 'zookeeper::install::repo' do
 
       context "on #{os}" do
         let(:facts) do
-          os_facts.merge({
-            :ipaddress     => '192.168.1.1',
-            :puppetversion => Puppet.version,
-          })
+          os_facts.merge(ipaddress: '192.168.1.1')
         end
 
         include_examples 'zookeeper repo release support', os_facts

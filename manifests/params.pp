@@ -13,28 +13,18 @@ class zookeeper::params {
   case $os_family {
     'Debian': {
       case $os_name {
-        'Debian': {
-          if versioncmp($os_release, '8') < 0 {
-            $initstyle = 'init'
-          } else  {
-            $initstyle = 'systemd'
-          }
-        }
-        'Ubuntu': {
-          if versioncmp($os_release, '15.04') < 0 {
-            $initstyle = 'upstart'
-          } else {
-            $initstyle = 'systemd'
-          }
+        'Debian', 'Ubuntu': {
+          $initstyle = 'systemd'
         }
         default: { $initstyle = undef }
       }
 
       $_os_overrides = {
-        'packages'         => ['zookeeper', 'zookeeperd'],
-        'service_name'     => 'zookeeper',
-        'service_provider' => $initstyle,
-        'shell'            => '/bin/false',
+        'packages'                 => ['zookeeper', 'zookeeperd'],
+        'service_name'             => 'zookeeper',
+        'service_provider'         => $initstyle,
+        'shell'                    => '/bin/false',
+        'initialize_datastore_bin' => '/usr/bin/zookeeper-server-initialize',
       }
       # 'environment' file probably read just by Debian
       # see #16, #81
@@ -42,14 +32,7 @@ class zookeeper::params {
     }
     'RedHat': {
       case $os_name {
-        'RedHat': {
-          if versioncmp($os_release, '7') < 0 {
-            $initstyle = 'redhat'
-          } else {
-            $initstyle = 'systemd'
-          }
-        }
-        'CentOS' : {
+        'RedHat', 'CentOS', 'Rocky': {
           if versioncmp($os_release, '7') < 0 {
             $initstyle = 'redhat'
           } else {
@@ -62,10 +45,28 @@ class zookeeper::params {
       }
 
       $_os_overrides = {
-        'packages'         => ['zookeeper', 'zookeeper-server'],
-        'service_name'     => 'zookeeper-server',
-        'service_provider' => $initstyle,
-        'shell'            => '/sbin/nologin',
+        'packages'                 => ['zookeeper', 'zookeeper-server'],
+        'service_name'             => 'zookeeper-server',
+        'service_provider'         => $initstyle,
+        'shell'                    => '/sbin/nologin',
+        'initialize_datastore_bin' => '/usr/bin/zookeeper-server-initialize',
+      }
+      $environment_file = 'java.env'
+    }
+    'Suse': {
+      case $os_name {
+        'SLES': {
+          $initstyle = 'systemd'
+        }
+        default: { $initstyle = undef }
+      }
+
+      $_os_overrides = {
+        'packages'                 => ['zookeeper', 'zookeeper-server'],
+        'service_name'             => 'zookeeper-server',
+        'service_provider'         => $initstyle,
+        'shell'                    => '/bin/false',
+        'initialize_datastore_bin' => '/usr/bin/zookeeper-server-initialize',
       }
       $environment_file = 'java.env'
     }
@@ -74,7 +75,7 @@ class zookeeper::params {
       fail("Module '${module_name}' is not supported on OS: '${os_name}', family: '${os_family}'")
     }
   }
-  $_params = merge($_defaults, $_os_overrides)
+  $_params = $_defaults + $_os_overrides
 
   # meta options
   $ensure = present
@@ -96,13 +97,15 @@ class zookeeper::params {
   $archive_symlink = true
   $archive_symlink_name = "${archive_install_dir}/zookeeper"
   $archive_version = '3.4.8'
-  $cdhver = undef
+  $cdhver = '5'
   $install_java = false
   $install_method = 'package'
   $java_bin = '/usr/bin/java'
   $java_opts = ''
   $java_package = undef
   $repo = undef
+  $repo_user = undef
+  $repo_password = undef
   $proxy_server = undef
   $proxy_type = undef
 
@@ -127,6 +130,32 @@ class zookeeper::params {
   $cleanup_sh = '/usr/share/zookeeper/bin/zkCleanup.sh'
   $client_ip = undef # use e.g. $::ipaddress if you want to bind to single interface
   $client_port = 2181
+  $secure_client_port = undef
+  $secure_port_only = false
+  $ssl = false
+  $ssl_protocol = 'TLSv1.2'
+  $ssl_ciphersuites = undef
+  $ssl_hostname_verification = true
+  $ssl_clientauth = 'none'
+  $keystore_location = "/etc/zookeeper/conf/keystores/${facts['networking']['fqdn']}.pem"
+  $keystore_type = 'PEM'
+  $keystore_password = undef
+  $truststore_location = '/etc/ssl/certs/ca-certificates.crt'
+  $truststore_type = 'PEM'
+  $truststore_password = undef
+  $keystore_quorum_location = "/etc/zookeeper/conf/keystores/${facts['networking']['fqdn']}.pem"
+  $keystore_quorum_type = 'PEM'
+  $keystore_quorum_password = undef
+  $truststore_quorum_location = '/etc/ssl/certs/ca-certificates.crt'
+  $truststore_quorum_password = undef
+  $truststore_quorum_type = 'PEM'
+  $ssl_quorum_ciphersuites = undef
+  $ssl_quorum_hostname_verification = true
+  $ssl_quorum_protocol = 'TLSv1.2'
+  $ssl_quorum = false
+  $quorum_listen_on_all_ips = false
+  $audit_enable = false
+  $port_unification = undef
   $datastore = '/var/lib/zookeeper'
   # datalogstore used to put transaction logs in separate location than snapshots
   $datalogstore = undef
@@ -135,6 +164,7 @@ class zookeeper::params {
   $id = '1'
   $init_limit = 10
   $initialize_datastore = false
+  $initialize_datastore_bin = $_params['initialize_datastore_bin']
   $leader = true
   $leader_port = 3888
   $log_dir = '/var/log/zookeeper'
@@ -146,6 +176,7 @@ class zookeeper::params {
   # interval in hours, purging enabled when >= 1
   $purge_interval = 0
   $servers = []
+  $pre_alloc_size = 65536
   $snap_count = 10000
   # since zookeeper 3.4, for earlier version cron task might be used
   $snap_retain_count = 3
@@ -165,13 +196,18 @@ class zookeeper::params {
   $maxfilesize = '256MB'
   $maxbackupindex = 20
   $extra_appenders = {}
+  $audit_threshold = 'INFO'
+  $audit_maxfilesize = '10M'
+  $audit_maxbackupindex = '10'
+  $logrotate_days = 7
+  $logrotate_timebased = false
 
   # sasl options
   $sasl_krb5 = true
   $sasl_users = {}
   $keytab_path = '/etc/zookeeper/conf/zookeeper.keytab'
-  $principal = "zookeeper/${::fqdn}"
-  $realm = pick($trusted['domain'], $trusted['certname'], 'realm')
+  $principal = "zookeeper/${facts['networking']['fqdn']}"
+  $realm = pick($trusted['domain'], $trusted['certname'], 'puppet')
   $store_key = true
   $use_keytab = true
   $use_ticket_cache = false
@@ -186,4 +222,8 @@ class zookeeper::params {
   $admin_server_port = 8080
   $admin_idle_timeout = 30000
   $admin_command_url = '/commands'
+  # Metrics Providers
+  $metrics_provider_classname = undef
+  $metrics_provider_http_port = 7000
+  $metrics_provider_export_jvm_info = true
 }
