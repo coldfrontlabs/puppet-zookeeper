@@ -130,6 +130,7 @@ class zookeeper::params {
   $cleanup_sh = '/usr/share/zookeeper/bin/zkCleanup.sh'
   $client_ip = undef # use e.g. $::ipaddress if you want to bind to single interface
   $client_port = 2181
+  $client_cert_reload = undef
   $secure_client_port = undef
   $secure_port_only = false
   $ssl = false
@@ -152,6 +153,7 @@ class zookeeper::params {
   $ssl_quorum_ciphersuites = undef
   $ssl_quorum_hostname_verification = true
   $ssl_quorum_protocol = 'TLSv1.2'
+  $ssl_quorum_reload_cert_files = undef
   $ssl_quorum = false
   $quorum_listen_on_all_ips = false
   $audit_enable = false
