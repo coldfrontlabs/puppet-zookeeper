@@ -199,6 +199,7 @@ class zookeeper (
   String                                     $cleanup_sh                       = $zookeeper::params::cleanup_sh,
   Optional[String]                           $client_ip                        = $zookeeper::params::client_ip,
   Integer                                    $client_port                      = $zookeeper::params::client_port,
+  Optional[Boolean]                          $client_cert_reload               = $zookeeper::params::client_cert_reload,
   Optional[Integer]                          $secure_client_port               = $zookeeper::params::secure_client_port,
   Optional[Boolean]                          $secure_port_only                 = $zookeeper::params::secure_port_only,
   Optional[Boolean]                          $ssl                              = $zookeeper::params::ssl,
@@ -221,6 +222,7 @@ class zookeeper (
   Optional[Boolean]                          $ssl_quorum_hostname_verification = $zookeeper::params::ssl_quorum_hostname_verification,
   Optional[String]                           $ssl_quorum_ciphersuites          = $zookeeper::params::ssl_quorum_ciphersuites,
   Optional[String]                           $ssl_quorum_protocol              = $zookeeper::params::ssl_quorum_protocol,
+  Optional[Boolean]                          $ssl_quorum_reload_cert_files     = $zookeeper::params::ssl_quorum_reload_cert_files,
   Optional[Boolean]                          $ssl_quorum                       = $zookeeper::params::ssl_quorum,
   Optional[Boolean]                          $port_unification                 = $zookeeper::params::port_unification,
   String                                     $datastore                        = $zookeeper::params::datastore,
@@ -267,7 +269,6 @@ class zookeeper (
   String                                     $audit_maxbackupindex             = $zookeeper::params::audit_maxbackupindex,
   Boolean                                    $logrotate_timebased              = $zookeeper::params::logrotate_timebased,
   Integer                                    $logrotate_days                   = $zookeeper::params::logrotate_days,
-
   # sasl options
   Hash[String, String]                       $sasl_users                       = $zookeeper::params::sasl_users,
   String                                     $keytab_path                      = $zookeeper::params::keytab_path,
@@ -281,6 +282,11 @@ class zookeeper (
   Boolean                                    $remove_realm_principal           = $zookeeper::params::remove_realm_principal,
   # four letter words whitelist
   Array[String]                              $whitelist_4lw                    = $zookeeper::params::whitelist_4lw,
+  Boolean                                    $admin_enable_server              = $zookeeper::params::admin_enable_server,
+  String                                     $admin_server_address             = $zookeeper::params::admin_server_address,
+  Integer                                    $admin_server_port                = $zookeeper::params::admin_server_port,
+  Integer                                    $admin_idle_timeout               = $zookeeper::params::admin_idle_timeout,
+  String                                     $admin_command_url                = $zookeeper::params::admin_command_url,
   # Metrics Providers
   Optional[String]                           $metrics_provider_classname       = $zookeeper::params::metrics_provider_classname,
   Integer                                    $metrics_provider_http_port       = $zookeeper::params::metrics_provider_http_port,
