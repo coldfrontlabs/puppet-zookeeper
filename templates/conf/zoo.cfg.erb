@@ -245,19 +245,6 @@ ssl.quorum.ciphersuites=<%=scope.lookupvar("zookeeper::ssl_quorum_ciphersuites")
 <% else -%>
 #ssl.quorum.ciphersuites=
 <% end -%>
-
-# Set allowed Ciphers
-<% if ! [nil, :undefined, :undef].include?scope.lookupvar("zookeeper::ssl_quorum_ciphersuites") %>
-ssl.quorum.ciphersuites=<%=scope.lookupvar("zookeeper::ssl_quorum_ciphersuites") %>
-<% else -%>
-#ssl.quorum.ciphersuites=
-<% end -%>
-
-# Set allowed Ciphers
-<% if ! [nil, :undefined, :undef].include?scope.lookupvar("zookeeper::ssl_quorum_ciphersuites") %>
-ssl.quorum.ciphersuites=<%=scope.lookupvar("zookeeper::ssl_quorum_ciphersuites") %>
-<% else -%>
-#ssl.quorum.ciphersuites=
 <% end -%>
 
 <% unless scope.lookupvar("zookeeper::whitelist_4lw").empty? -%>
