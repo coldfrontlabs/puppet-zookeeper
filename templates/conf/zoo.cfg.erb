@@ -172,7 +172,6 @@ client.certReload=<%=scope.lookupvar("zookeeper::client_cert_reload") %>
 <% else -%>
 #client.certReload=
 <% end -%>
-<% end -%>
 
 # Force TLS version
 ssl.protocol=<%= scope.lookupvar("zookeeper::ssl_protocol") %>
