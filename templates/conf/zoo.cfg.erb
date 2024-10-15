@@ -216,7 +216,6 @@ sslQuorumReloadCertFiles=<%=scope.lookupvar("zookeeper::ssl_quorum_reload_cert_f
 <% else -%>
 #sslQuorumReloadCertFiles=
 <% end -%>
-<% end -%>
 
 # Force TLS version
 ssl.quorum.protocol=<%= scope.lookupvar("zookeeper::ssl_quorum_protocol") %>
@@ -247,7 +246,6 @@ ssl.quorum.ciphersuites=<%=scope.lookupvar("zookeeper::ssl_quorum_ciphersuites")
 <% else -%>
 #ssl.quorum.ciphersuites=
 <% end -%>
-<% end -%>
 
 # Set allowed Ciphers
 <% if ! [nil, :undefined, :undef].include?scope.lookupvar("zookeeper::ssl_quorum_ciphersuites") %>
@@ -255,14 +253,12 @@ ssl.quorum.ciphersuites=<%=scope.lookupvar("zookeeper::ssl_quorum_ciphersuites")
 <% else -%>
 #ssl.quorum.ciphersuites=
 <% end -%>
-<% end -%>
 
 # Set allowed Ciphers
 <% if ! [nil, :undefined, :undef].include?scope.lookupvar("zookeeper::ssl_quorum_ciphersuites") %>
 ssl.quorum.ciphersuites=<%=scope.lookupvar("zookeeper::ssl_quorum_ciphersuites") %>
 <% else -%>
 #ssl.quorum.ciphersuites=
-<% end -%>
 <% end -%>
 
 <% unless scope.lookupvar("zookeeper::whitelist_4lw").empty? -%>
