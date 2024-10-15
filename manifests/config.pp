@@ -38,14 +38,14 @@ class zookeeper::config inherits zookeeper {
     }
   }
 
-  if $::zookeeper::service_provider != 'exhibitor' {
-    if !$::zookeeper::admin_enable_server {
+  if $zookeeper::service_provider != 'exhibitor' {
+    if !$zookeeper::admin_enable_server {
       $enable_admin_server_config = false
-    } elsif $::zookeeper::install_method == 'archive' and versioncmp($::zookeeper::archive_version, '3.5.5') >= 0 {
+    } elsif $zookeeper::install_method == 'archive' and versioncmp($zookeeper::archive_version, '3.5.5') >= 0 {
       $enable_admin_server_config = true
-    } elsif $::zookeeper::install_method == 'archive' and versioncmp($::zookeeper::archive_version, '3.5.5') < 0 {
+    } elsif $zookeeper::install_method == 'archive' and versioncmp($zookeeper::archive_version, '3.5.5') < 0 {
       $enable_admin_server_config = false
-    } elsif $::zookeeper::install_method == 'package' and $::zookeeper::ensure =~ /^[0-9]/ and versioncmp($::zookeeper::ensure, '3.5.5') < 0 {
+    } elsif $zookeeper::install_method == 'package' and $zookeeper::ensure =~ /^[0-9]/ and versioncmp($zookeeper::ensure, '3.5.5') < 0 {
       $enable_admin_server_config = false
     } else {
       $enable_admin_server_config = true
