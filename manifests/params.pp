@@ -130,6 +130,7 @@ class zookeeper::params {
   $cleanup_sh = '/usr/share/zookeeper/bin/zkCleanup.sh'
   $client_ip = undef # use e.g. $::ipaddress if you want to bind to single interface
   $client_port = 2181
+  $client_cert_reload = undef
   $secure_client_port = undef
   $secure_port_only = false
   $ssl = false
@@ -152,6 +153,7 @@ class zookeeper::params {
   $ssl_quorum_ciphersuites = undef
   $ssl_quorum_hostname_verification = true
   $ssl_quorum_protocol = 'TLSv1.2'
+  $ssl_quorum_reload_cert_files = undef
   $ssl_quorum = false
   $quorum_listen_on_all_ips = false
   $audit_enable = false
@@ -216,6 +218,12 @@ class zookeeper::params {
   # whitelist of Four Letter Words commands, see https://zookeeper.apache.org/doc/r3.4.12/zookeeperAdmin.html#sc_zkCommands
   $whitelist_4lw = []
 
+  # admin server options
+  $admin_enable_server = true
+  $admin_server_address = '0.0.0.0'
+  $admin_server_port = 8080
+  $admin_idle_timeout = 30000
+  $admin_command_url = '/commands'
   # Metrics Providers
   $metrics_provider_classname = undef
   $metrics_provider_http_port = 7000
